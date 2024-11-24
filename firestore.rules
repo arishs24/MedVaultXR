@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Allow authenticated users to read and write to the "prescriptions" collection
+    match /prescriptions/{docId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null;
+            }
+    match /reminders/{docId} {
+  allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+}
+
+    // General rule: Allow read and write access to all other documents temporarily (until the specified date)
+    match /{document=**} {
+      allow read, write: if request.time < timestamp.date(2024, 12, 24);
+    }
+  }
+}
